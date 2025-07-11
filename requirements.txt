@@ -1,0 +1,5 @@
+# Core dependencies
+pyvisa>=1.11.0
+
+# Optional dependencies for development
+# Install with: pip install -r requirements-dev.txt
