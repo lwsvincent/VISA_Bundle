@@ -181,7 +181,7 @@ echo ================================
 echo STEP 6: UPDATING VERSION FILES
 echo ================================
 
-REM Update version files using update_version.bat
+REM Update version files using enhanced update_version.bat
 echo Calling update_version.bat !NEW_VER_NUM!...
 call "%SCRIPT_DIR%update_version.bat" !NEW_VER_NUM!
 if %ERRORLEVEL% neq 0 (
