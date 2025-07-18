@@ -178,83 +178,7 @@ echo ✅ Successfully on release branch
 
 echo.
 echo ================================
-echo STEP 6: BUILDING WHEEL PACKAGE
-echo ================================
-
-REM Build wheel using build_wheel.bat
-echo Calling build_wheel.bat...
-call "%SCRIPT_DIR%build_wheel.bat"
-if %ERRORLEVEL% neq 0 (
-    echo ERROR: Failed to build wheel package
-    echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
-    cd /d "%ORIGINAL_DIR%"
-    exit /b 1
-)
-
-echo ✅ Wheel package built successfully
-
-echo.
-echo ================================
-echo STEP 7: CREATING TEST ENVIRONMENT
-echo ================================
-
-REM Create test environment using create_venv.bat
-echo Calling create_venv.bat -test -dev...
-call "%SCRIPT_DIR%create_venv.bat" -test -dev
-if %ERRORLEVEL% neq 0 (
-    echo ERROR: Failed to create test environment
-    echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
-    cd /d "%ORIGINAL_DIR%"
-    exit /b 1
-)
-
-echo ✅ Test environment created successfully
-
-echo.
-echo ================================
-echo STEP 8: INSTALLING TO TEST ENVIRONMENT
-echo ================================
-
-REM Install wheel to test environment
-echo Calling install_wheel.bat --venv test-venv...
-call "%SCRIPT_DIR%install_wheel.bat" --venv test-venv
-if %ERRORLEVEL% neq 0 (
-    echo ERROR: Failed to install wheel to test environment
-    echo Cleaning up test environment...
-    if exist "test-venv" rmdir /s /q test-venv
-    echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
-    cd /d "%ORIGINAL_DIR%"
-    exit /b 1
-)
-
-echo ✅ Package installed to test environment successfully
-
-echo.
-echo ================================
-echo STEP 9: RUNNING TESTS
-echo ================================
-
-REM Run tests using run_tests.bat with test environment
-echo Calling run_tests.bat full -testvenv test-venv...
-call "%SCRIPT_DIR%run_tests.bat" full -testvenv test-venv
-if %ERRORLEVEL% neq 0 (
-    echo ERROR: Tests failed in test environment
-    echo Cleaning up test environment...
-    if exist "test-venv" rmdir /s /q test-venv
-    echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
-    cd /d "%ORIGINAL_DIR%"
-    exit /b 1
-)
-
-echo ✅ All tests passed in test environment
-
-echo.
-echo ================================
-echo STEP 10: UPDATING VERSION FILES
+echo STEP 6: UPDATING VERSION FILES
 echo ================================
 
 REM Update version files using update_version.bat
@@ -262,8 +186,6 @@ echo Calling update_version.bat !NEW_VER_NUM!...
 call "%SCRIPT_DIR%update_version.bat" !NEW_VER_NUM!
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to update version files
-    echo Cleaning up test environment...
-    if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
     cd /d "%ORIGINAL_DIR%"
@@ -279,8 +201,6 @@ for /f "tokens=*" %%a in ('"%SCRIPT_DIR%get_version.bat" -pyproject 2^>nul') do 
 :version_verified
 if "!UPDATED_VERSION!" neq "!NEW_VER_NUM!" (
     echo ERROR: Version not properly updated in pyproject.toml (expected: !NEW_VER_NUM!, got: !UPDATED_VERSION!)
-    echo Cleaning up test environment...
-    if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
     cd /d "%ORIGINAL_DIR%"
@@ -293,8 +213,6 @@ echo Updating CHANGELOG.md [Unreleased] section to version !NEW_VER_NUM!...
 call :update_changelog !NEW_VER_NUM!
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to update CHANGELOG.md
-    echo Cleaning up test environment...
-    if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
     cd /d "%ORIGINAL_DIR%"
@@ -309,21 +227,23 @@ git add -A
 git commit -m "add changelog version to v!NEW_VER_NUM!"
 if errorlevel 1 (
     echo ERROR: Failed to commit version changes
-    echo Cleaning up test environment...
-    if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
 
+REM Store commit hash for potential rollback
+for /f "tokens=*" %%a in ('git rev-parse HEAD') do set VERSION_COMMIT_HASH=%%a
+echo Version commit hash stored for rollback: !VERSION_COMMIT_HASH!
+
 REM Push version changes to release branch
 echo Pushing version changes to release branch...
 git push origin release
 if errorlevel 1 (
     echo ERROR: Failed to push version changes
-    echo Cleaning up test environment...
-    if exist "test-venv" rmdir /s /q test-venv
+    echo Performing rollback...
+    call :rollback_version_changes
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
     cd /d "%ORIGINAL_DIR%"
@@ -334,27 +254,91 @@ echo ✅ Version changes committed and pushed successfully
 
 echo.
 echo ================================
-echo STEP 11-0: REBUILDING WHEEL PACKAGE
+echo STEP 7: BUILDING WHEEL PACKAGE
 echo ================================
 
-REM Rebuild wheel after version update
+REM Build wheel using build_wheel.bat (now with updated version)
 echo Calling build_wheel.bat...
 call "%SCRIPT_DIR%build_wheel.bat"
 if %ERRORLEVEL% neq 0 (
-    echo ERROR: Failed to rebuild wheel package
-    echo Cleaning up test environment...
-    if exist "test-venv" rmdir /s /q test-venv
+    echo ERROR: Failed to build wheel package
+    echo Performing rollback...
+    call :rollback_version_changes
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
 
-echo ✅ Wheel package rebuilt successfully
+echo ✅ Wheel package built successfully
 
 echo.
 echo ================================
-echo STEP 11-1: PUSHING TO RELEASE BRANCH AND CREATING TAG
+echo STEP 8: CREATING TEST ENVIRONMENT
+echo ================================
+
+REM Create test environment using create_venv.bat
+echo Calling create_venv.bat -test -dev...
+call "%SCRIPT_DIR%create_venv.bat" -test -dev
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: Failed to create test environment
+    echo Performing rollback...
+    call :rollback_version_changes
+    echo Returning to main branch...
+    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    cd /d "%ORIGINAL_DIR%"
+    exit /b 1
+)
+
+echo ✅ Test environment created successfully
+
+echo.
+echo ================================
+echo STEP 9: INSTALLING TO TEST ENVIRONMENT
+echo ================================
+
+REM Install wheel to test environment
+echo Calling install_wheel.bat --venv test-venv...
+call "%SCRIPT_DIR%install_wheel.bat" --venv test-venv
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: Failed to install wheel to test environment
+    echo Cleaning up test environment...
+    if exist "test-venv" rmdir /s /q test-venv
+    echo Performing rollback...
+    call :rollback_version_changes
+    echo Returning to main branch...
+    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    cd /d "%ORIGINAL_DIR%"
+    exit /b 1
+)
+
+echo ✅ Package installed to test environment successfully
+
+echo.
+echo ================================
+echo STEP 10: RUNNING TESTS
+echo ================================
+
+REM Run tests using run_tests.bat with test environment
+echo Calling run_tests.bat full -testvenv test-venv...
+call "%SCRIPT_DIR%run_tests.bat" full -testvenv test-venv
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: Tests failed in test environment
+    echo Cleaning up test environment...
+    if exist "test-venv" rmdir /s /q test-venv
+    echo Performing rollback...
+    call :rollback_version_changes
+    echo Returning to main branch...
+    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    cd /d "%ORIGINAL_DIR%"
+    exit /b 1
+)
+
+echo ✅ All tests passed in test environment
+
+echo.
+echo ================================
+echo STEP 11: PUSHING TO RELEASE BRANCH AND CREATING TAG
 echo ================================
 
 REM Push to release branch using push_to_release.bat
@@ -364,6 +348,8 @@ if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to push to release branch
     echo Cleaning up test environment...
     if exist "test-venv" rmdir /s /q test-venv
+    echo Performing rollback...
+    call :rollback_version_changes
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
     cd /d "%ORIGINAL_DIR%"
@@ -377,6 +363,8 @@ if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to create git tag
     echo Cleaning up test environment...
     if exist "test-venv" rmdir /s /q test-venv
+    echo Performing rollback...
+    call :rollback_version_changes
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
     cd /d "%ORIGINAL_DIR%"
@@ -387,7 +375,7 @@ echo ✅ Pushed to release branch and created tag successfully
 
 echo.
 echo ================================
-echo STEP 11-3-1: CREATING GITHUB RELEASE
+echo STEP 12: CREATING GITHUB RELEASE
 echo ================================
 
 REM Create GitHub release using release_to_remote.bat
@@ -397,6 +385,8 @@ if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to create GitHub release
     echo Cleaning up test environment...
     if exist "test-venv" rmdir /s /q test-venv
+    echo Performing rollback...
+    call :rollback_version_changes
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
     cd /d "%ORIGINAL_DIR%"
@@ -407,7 +397,7 @@ echo ✅ GitHub release created successfully
 
 echo.
 echo ================================
-echo STEP 11-2: MERGING RELEASE TO MAIN
+echo STEP 13: MERGING RELEASE TO MAIN
 echo ================================
 
 REM Switch back to main branch
@@ -417,6 +407,8 @@ if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to switch back to main branch
     echo Cleaning up test environment...
     if exist "test-venv" rmdir /s /q test-venv
+    echo Performing rollback...
+    call :rollback_version_changes
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -428,6 +420,8 @@ if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to merge release to main
     echo Cleaning up test environment...
     if exist "test-venv" rmdir /s /q test-venv
+    echo Performing rollback...
+    call :rollback_version_changes
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -439,6 +433,8 @@ if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to push main branch
     echo Cleaning up test environment...
     if exist "test-venv" rmdir /s /q test-venv
+    echo Performing rollback...
+    call :rollback_version_changes
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -461,7 +457,7 @@ echo ✅ Release branch deleted successfully
 
 echo.
 echo ================================
-echo STEP 12: CLEANUP
+echo STEP 14: CLEANUP
 echo ================================
 
 REM Clean up test environment and build artifacts
@@ -567,4 +563,42 @@ if errorlevel 1 (
 )
 
 echo ✅ CHANGELOG.md updated successfully
+goto :eof
+
+REM Function to rollback version changes in case of failure
+:rollback_version_changes
+echo.
+echo ================================
+echo PERFORMING ROLLBACK
+echo ================================
+echo Rolling back version changes due to release failure...
+
+REM Check if we have a version commit to rollback
+if not defined VERSION_COMMIT_HASH (
+    echo No version commit found to rollback
+    goto :eof
+)
+
+REM Get the commit before the version commit
+for /f "tokens=*" %%a in ('git rev-parse !VERSION_COMMIT_HASH!~1') do set PREVIOUS_COMMIT=%%a
+
+REM Reset to the commit before version changes
+echo Resetting to commit before version changes: !PREVIOUS_COMMIT!
+git reset --hard !PREVIOUS_COMMIT!
+if errorlevel 1 (
+    echo ERROR: Failed to reset to previous commit
+    echo Manual rollback required: git reset --hard !PREVIOUS_COMMIT!
+    goto :eof
+)
+
+REM Force push to release branch to remove version commit from remote
+echo Force pushing rollback to release branch...
+git push origin release --force
+if errorlevel 1 (
+    echo WARNING: Failed to force push rollback to release branch
+    echo Manual cleanup required: git push origin release --force
+)
+
+echo ✅ Version changes rolled back successfully
+echo Repository state restored to commit: !PREVIOUS_COMMIT!
 goto :eof
