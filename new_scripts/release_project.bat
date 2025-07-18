@@ -203,11 +203,35 @@ if %ERRORLEVEL% neq 0 (
 
 REM Verify version was actually updated in pyproject.toml
 echo Verifying version update in pyproject.toml...
-for /f "tokens=*" %%a in ('"%SCRIPT_DIR%get_version.bat" -pyproject 2^>nul') do (
-    set "UPDATED_VERSION=%%a"
-    goto :version_verified
+echo Debug: Calling get_version.bat -pyproject to verify update...
+
+REM Create a temporary file to capture the output
+set "TEMP_VERSION_FILE=%TEMP%\version_check_%RANDOM%.tmp"
+"%SCRIPT_DIR%get_version.bat" -pyproject > "%TEMP_VERSION_FILE%" 2>&1
+
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: [STEP 6] Failed to get updated version from pyproject.toml
+    echo This error occurred during version verification phase
+    type "%TEMP_VERSION_FILE%" 2>nul
+    del "%TEMP_VERSION_FILE%" 2>nul
+    echo Returning to main branch...
+    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
+    cd /d "%ORIGINAL_DIR%"
+    exit /b 1
 )
-:version_verified
+
+REM Read the version from the temporary file
+set "UPDATED_VERSION="
+for /f "tokens=*" %%a in ('type "%TEMP_VERSION_FILE%"') do (
+    set "UPDATED_VERSION=%%a"
+    goto :version_read
+)
+:version_read
+del "%TEMP_VERSION_FILE%" 2>nul
+
+echo Debug: Expected version: !NEW_VER_NUM!, Got version: !UPDATED_VERSION!
 if "!UPDATED_VERSION!" neq "!NEW_VER_NUM!" (
     echo ERROR: [STEP 6] Version not properly updated in pyproject.toml (expected: !NEW_VER_NUM!, got: !UPDATED_VERSION!)
     echo This error occurred during version verification phase
