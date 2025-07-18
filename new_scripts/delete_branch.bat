@@ -1,19 +1,16 @@
 @echo off
-REM Script to delete a branch (local and/or remote)
-REM Usage: delete_branch.bat <branch_name> [--remote]
+REM Script to delete a branch (local and remote)
+REM Usage: delete_branch.bat <branch_name>
 
 if "%1"=="" (
-    echo Usage: delete_branch.bat ^<branch_name^> [--remote]
+    echo Usage: delete_branch.bat ^<branch_name^>
     echo Example: delete_branch.bat feature/old-feature
-    echo Example: delete_branch.bat feature/old-feature --remote
     echo.
-    echo Options:
-    echo   --remote    Also delete the branch from remote origin
+    echo This script will delete both local and remote branches.
     exit /b 1
 )
 
 set BRANCH_NAME=%1
-set DELETE_REMOTE=%2
 
 REM Check if trying to delete protected branches
 if /i "%BRANCH_NAME%"=="main" (
@@ -36,7 +33,25 @@ if /i "%BRANCH_NAME%"=="%CURRENT_BRANCH%" (
     exit /b 1
 )
 
-echo Deleting branch '%BRANCH_NAME%'...
+echo.
+echo ================================
+echo         WARNING: DANGEROUS OPERATION!
+echo ================================
+echo This will PERMANENTLY DELETE both LOCAL and REMOTE branches:
+echo   Branch: %BRANCH_NAME%
+echo   Local:  Will be deleted from your local repository
+echo   Remote: Will be deleted from origin (this affects all team members)
+echo.
+echo This action CANNOT be undone!
+echo ================================
+echo.
+set /p CONFIRM=Are you sure you want to delete branch '%BRANCH_NAME%'? (Y/N): 
+if /i not "%CONFIRM%"=="Y" (
+    echo Operation cancelled.
+    exit /b 0
+)
+echo.
+echo Proceeding with deletion of branch '%BRANCH_NAME%'...
 
 REM Check if branch exists locally
 git show-ref --verify --quiet refs/heads/%BRANCH_NAME%
@@ -53,22 +68,20 @@ if %ERRORLEVEL% == 0 (
     echo Local branch '%BRANCH_NAME%' does not exist
 )
 
-REM Delete remote branch if --remote flag is provided
-if /i "%DELETE_REMOTE%"=="--remote" (
-    echo Checking if remote branch exists...
-    git ls-remote --heads origin %BRANCH_NAME% | find "%BRANCH_NAME%" >nul
+REM Delete remote branch
+echo Checking if remote branch exists...
+git ls-remote --heads origin %BRANCH_NAME% | find "%BRANCH_NAME%" >nul
+if %ERRORLEVEL% == 0 (
+    echo Deleting remote branch '%BRANCH_NAME%'...
+    git push origin --delete %BRANCH_NAME%
     if %ERRORLEVEL% == 0 (
-        echo Deleting remote branch '%BRANCH_NAME%'...
-        git push origin --delete %BRANCH_NAME%
-        if %ERRORLEVEL% == 0 (
-            echo Remote branch '%BRANCH_NAME%' deleted successfully
-        ) else (
-            echo Failed to delete remote branch '%BRANCH_NAME%'
-            exit /b 1
-        )
+        echo Remote branch '%BRANCH_NAME%' deleted successfully
     ) else (
-        echo Remote branch '%BRANCH_NAME%' does not exist
+        echo Failed to delete remote branch '%BRANCH_NAME%'
+        exit /b 1
     )
+) else (
+    echo Remote branch '%BRANCH_NAME%' does not exist
 )
 
-echo Branch deletion completed.
+echo Local and remote branch deletion completed.
