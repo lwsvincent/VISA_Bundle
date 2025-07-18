@@ -91,5 +91,8 @@ dir dist\*.whl /b
 echo.
 echo Build completed successfully.
 
+REM Deactivate virtual environment
+call deactivate
+
 REM Restore original working directory
 cd /d "%ORIGINAL_DIR%"
