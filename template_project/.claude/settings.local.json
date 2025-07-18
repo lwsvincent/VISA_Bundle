@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  },
+  "customActions": {
+    "release": {
+      "command": "bash scripts/release.sh"
+    }
+  }
+}
