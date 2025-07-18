@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "visa-bundle"
-version = "0.1.0"
+version = "1.0.0"
 description = "VISA instrument driver package for DS_Platform - Python wrapper for pyvisa with enhanced management features"
 authors = [
     {name = "DS Platform Team", email = "support@dsplatform.com"}
