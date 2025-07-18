@@ -119,7 +119,7 @@ echo Updating CHANGELOG.md...
 for /f "tokens=2-4 delims=/ " %%a in ('date /t') do (
     set CURRENT_DATE=%%c-%%a-%%b
 )
-powershell -Command "$content = (Get-Content CHANGELOG.md -Encoding UTF8) -replace '## \[Unreleased\]', '## [%NEW_VERSION%] - %CURRENT_DATE%'; [System.IO.File]::WriteAllLines((Resolve-Path 'CHANGELOG.md'), $content, [System.Text.UTF8Encoding]::new($false))"
+powershell -Command "$content = Get-Content CHANGELOG.md -Raw -Encoding UTF8; $content = $content -replace '## \[Unreleased\]', '## [%NEW_VERSION%] - %CURRENT_DATE%'; $utf8NoBom = New-Object System.Text.UTF8Encoding($false); [System.IO.File]::WriteAllText((Resolve-Path 'CHANGELOG.md'), $content, $utf8NoBom)"
 
 echo.
 echo Version updated successfully!
