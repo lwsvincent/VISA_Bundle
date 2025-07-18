@@ -65,18 +65,18 @@ if not exist "CHANGELOG.md" (
 
 REM Update pyproject.toml version
 echo Updating pyproject.toml...
-powershell -Command "(Get-Content pyproject.toml -Encoding UTF8NoBOM) -replace '^version = \".*\"', 'version = \"%NEW_VERSION%\"' | Set-Content pyproject.toml -Encoding UTF8NoBOM"
+powershell -Command "$content = (Get-Content pyproject.toml -Encoding UTF8) -replace '^version = \".*\"', 'version = \"%NEW_VERSION%\"'; [System.IO.File]::WriteAllLines((Resolve-Path 'pyproject.toml'), $content, [System.Text.UTF8Encoding]::new($false))"
 
 REM Update README.md if it contains version references
 echo Updating README.md...
-powershell -Command "(Get-Content README.md -Encoding UTF8NoBOM) -replace 'version [0-9]+\.[0-9]+\.[0-9]+', 'version %NEW_VERSION%' | Set-Content README.md -Encoding UTF8NoBOM"
+powershell -Command "$content = (Get-Content README.md -Encoding UTF8) -replace 'version [0-9]+\.[0-9]+\.[0-9]+', 'version %NEW_VERSION%'; [System.IO.File]::WriteAllLines((Resolve-Path 'README.md'), $content, [System.Text.UTF8Encoding]::new($false))"
 
 REM Update CHANGELOG.md - replace [Unreleased] with version and date
 echo Updating CHANGELOG.md...
 for /f "tokens=2-4 delims=/ " %%a in ('date /t') do (
     set CURRENT_DATE=%%c-%%a-%%b
 )
-powershell -Command "(Get-Content CHANGELOG.md -Encoding UTF8NoBOM) -replace '## \[Unreleased\]', '## [%NEW_VERSION%] - %CURRENT_DATE%' | Set-Content CHANGELOG.md -Encoding UTF8NoBOM"
+powershell -Command "$content = (Get-Content CHANGELOG.md -Encoding UTF8) -replace '## \[Unreleased\]', '## [%NEW_VERSION%] - %CURRENT_DATE%'; [System.IO.File]::WriteAllLines((Resolve-Path 'CHANGELOG.md'), $content, [System.Text.UTF8Encoding]::new($false))"
 
 echo.
 echo Version updated successfully!
