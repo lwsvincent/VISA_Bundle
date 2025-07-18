@@ -167,7 +167,7 @@ echo ================================
 
 REM Switch to or create release branch
 echo Calling change_branch.bat release...
-call "%SCRIPT_DIR%change_branch.bat" release
+start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" release"
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to create/switch to release branch
     cd /d "%ORIGINAL_DIR%"
@@ -183,11 +183,11 @@ echo ================================
 
 REM Update version files using enhanced update_version.bat
 echo Calling update_version.bat !NEW_VER_NUM!...
-call "%SCRIPT_DIR%update_version.bat" !NEW_VER_NUM!
+start /wait cmd /c ""%SCRIPT_DIR%update_version.bat" !NEW_VER_NUM!"
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to update version files
     echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -202,7 +202,7 @@ for /f "tokens=*" %%a in ('"%SCRIPT_DIR%get_version.bat" -pyproject 2^>nul') do 
 if "!UPDATED_VERSION!" neq "!NEW_VER_NUM!" (
     echo ERROR: Version not properly updated in pyproject.toml (expected: !NEW_VER_NUM!, got: !UPDATED_VERSION!)
     echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -214,7 +214,7 @@ call :update_changelog !NEW_VER_NUM!
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to update CHANGELOG.md
     echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -228,7 +228,7 @@ git commit -m "add changelog version to v!NEW_VER_NUM!"
 if errorlevel 1 (
     echo ERROR: Failed to commit version changes
     echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -245,7 +245,7 @@ if errorlevel 1 (
     echo Performing rollback...
     call :rollback_version_changes
     echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -259,13 +259,13 @@ echo ================================
 
 REM Build wheel using build_wheel.bat (now with updated version)
 echo Calling build_wheel.bat...
-call "%SCRIPT_DIR%build_wheel.bat"
+start /wait cmd /c ""%SCRIPT_DIR%build_wheel.bat""
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to build wheel package
     echo Performing rollback...
     call :rollback_version_changes
     echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -279,13 +279,13 @@ echo ================================
 
 REM Create test environment using create_venv.bat
 echo Calling create_venv.bat -test -dev...
-call "%SCRIPT_DIR%create_venv.bat" -test -dev
+start /wait cmd /c ""%SCRIPT_DIR%create_venv.bat" -test -dev"
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to create test environment
     echo Performing rollback...
     call :rollback_version_changes
     echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -299,7 +299,7 @@ echo ================================
 
 REM Install wheel to test environment
 echo Calling install_wheel.bat --venv test-venv...
-call "%SCRIPT_DIR%install_wheel.bat" --venv test-venv
+start /wait cmd /c ""%SCRIPT_DIR%install_wheel.bat" --venv test-venv"
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to install wheel to test environment
     echo Cleaning up test environment...
@@ -307,7 +307,7 @@ if %ERRORLEVEL% neq 0 (
     echo Performing rollback...
     call :rollback_version_changes
     echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -321,7 +321,7 @@ echo ================================
 
 REM Run tests using run_tests.bat with test environment
 echo Calling run_tests.bat full -testvenv test-venv...
-call "%SCRIPT_DIR%run_tests.bat" full -testvenv test-venv
+start /wait cmd /c ""%SCRIPT_DIR%run_tests.bat" full -testvenv test-venv"
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Tests failed in test environment
     echo Cleaning up test environment...
@@ -329,7 +329,7 @@ if %ERRORLEVEL% neq 0 (
     echo Performing rollback...
     call :rollback_version_changes
     echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -343,7 +343,7 @@ echo ================================
 
 REM Push to release branch using push_to_release.bat
 echo Calling push_to_release.bat...
-call "%SCRIPT_DIR%push_to_release.bat"
+start /wait cmd /c ""%SCRIPT_DIR%push_to_release.bat""
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to push to release branch
     echo Cleaning up test environment...
@@ -351,14 +351,14 @@ if %ERRORLEVEL% neq 0 (
     echo Performing rollback...
     call :rollback_version_changes
     echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
 
 REM Create git tag using create_tag.bat
 echo Calling create_tag.bat !NEW_VER_NUM!...
-call "%SCRIPT_DIR%create_tag.bat" !NEW_VER_NUM!
+start /wait cmd /c ""%SCRIPT_DIR%create_tag.bat" !NEW_VER_NUM!"
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to create git tag
     echo Cleaning up test environment...
@@ -366,7 +366,7 @@ if %ERRORLEVEL% neq 0 (
     echo Performing rollback...
     call :rollback_version_changes
     echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -380,7 +380,7 @@ echo ================================
 
 REM Create GitHub release using release_to_remote.bat
 echo Calling release_to_remote.bat !NEW_VER_NUM!...
-call "%SCRIPT_DIR%release_to_remote.bat" !NEW_VER_NUM!
+start /wait cmd /c ""%SCRIPT_DIR%release_to_remote.bat" !NEW_VER_NUM!"
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to create GitHub release
     echo Cleaning up test environment...
@@ -388,7 +388,7 @@ if %ERRORLEVEL% neq 0 (
     echo Performing rollback...
     call :rollback_version_changes
     echo Returning to main branch...
-    call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -402,7 +402,7 @@ echo ================================
 
 REM Switch back to main branch
 echo Switching back to main branch...
-call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+start /wait cmd /c ""%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!"
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to switch back to main branch
     echo Cleaning up test environment...
@@ -468,13 +468,13 @@ if exist "test-venv" (
 )
 
 echo Cleaning up build artifacts...
-call "%SCRIPT_DIR%cleanup_build.bat"
+start /wait cmd /c ""%SCRIPT_DIR%cleanup_build.bat""
 if %ERRORLEVEL% neq 0 (
     echo WARNING: Failed to clean build artifacts (non-critical)
 )
 
 echo Final cleanup of build artifacts...
-call "%SCRIPT_DIR%cleanup_build.bat"
+start /wait cmd /c ""%SCRIPT_DIR%cleanup_build.bat""
 if %ERRORLEVEL% neq 0 (
     echo WARNING: Failed to clean build artifacts (non-critical)
 )
