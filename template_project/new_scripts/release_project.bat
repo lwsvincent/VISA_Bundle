@@ -188,6 +188,8 @@ if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to build wheel package
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -206,6 +208,8 @@ if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to create test environment
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -226,6 +230,8 @@ if %ERRORLEVEL% neq 0 (
     if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -246,6 +252,8 @@ if %ERRORLEVEL% neq 0 (
     if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -266,6 +274,8 @@ if %ERRORLEVEL% neq 0 (
     if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -283,6 +293,8 @@ if "!UPDATED_VERSION!" neq "!NEW_VER_NUM!" (
     if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -297,6 +309,8 @@ if %ERRORLEVEL% neq 0 (
     if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -313,6 +327,8 @@ if errorlevel 1 (
     if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -326,6 +342,8 @@ if errorlevel 1 (
     if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -346,6 +364,8 @@ if %ERRORLEVEL% neq 0 (
     if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -366,6 +386,8 @@ if %ERRORLEVEL% neq 0 (
     if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -379,6 +401,8 @@ if %ERRORLEVEL% neq 0 (
     if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -399,6 +423,8 @@ if %ERRORLEVEL% neq 0 (
     if exist "test-venv" rmdir /s /q test-venv
     echo Returning to main branch...
     call "%SCRIPT_DIR%change_branch.bat" !CURRENT_BRANCH!
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -417,6 +443,8 @@ if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to switch back to main branch
     echo Cleaning up test environment...
     if exist "test-venv" rmdir /s /q test-venv
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -428,6 +456,8 @@ if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to merge release to main
     echo Cleaning up test environment...
     if exist "test-venv" rmdir /s /q test-venv
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
@@ -439,6 +469,8 @@ if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to push main branch
     echo Cleaning up test environment...
     if exist "test-venv" rmdir /s /q test-venv
+    echo Deleting release branch...
+    call "%SCRIPT_DIR%delete_branch.bat" release
     cd /d "%ORIGINAL_DIR%"
     exit /b 1
 )
