@@ -188,10 +188,11 @@ release_project.bat -major    # Increment major version
 - Check uncommitted changes and branch status
 - Automatically calculate new version number (supports major/minor/patch increment)
 - Version validation and comparison
-- Automatic build and test
-- Update CHANGELOG.md and version files
+- **Update version files BEFORE wheel build** (ensures updated documentation)
+- Automatic build and test with updated version
 - Create GitHub release and tags
 - Merge to main branch and cleanup release branch
+- **Automatic rollback on failure** - reverts all changes if release fails
 
 #### push_to_release.bat - Push to Release Branch
 ```batch
@@ -330,9 +331,11 @@ release_project.bat -minor    # Minor version (x.X.0)
 release_project.bat -major    # Major version (X.0.0)
 ```
 **Features**: 
-- Fully automated: 12 steps from check to release
+- Fully automated: 14 steps from check to release
 - Version management: Smart calculation of new version numbers (major/minor/patch)
-- Security: Multi-layer validation and error rollback
+- **Build order optimization**: Version files updated before wheel build for accurate documentation
+- **Automatic rollback**: Complete git rollback on any failure after version commit
+- **Security**: Multi-layer validation and error rollback
 - Completeness: Includes testing, building, tagging, GitHub release
 - Intelligence: Automatic version detection and environment management
 - Cleanup mechanism: Automatic deletion of release branch and cleanup of build files
@@ -471,7 +474,14 @@ cd template_project
 
 ## Version History
 
-- **v1.2.0**: Release automation enhancements (current version)
+- **v1.2.1**: Release process optimization and rollback mechanism (current version)
+  - **Reordered build process**: Version files now updated before wheel build
+  - **Added automatic rollback**: Complete git rollback on release failure
+  - **Enhanced error handling**: All post-commit errors trigger rollback
+  - **Improved build accuracy**: Documentation reflects correct version numbers
+  - **Better step organization**: Reorganized from 12 to 14 logical steps
+
+- **v1.2.0**: Release automation enhancements
   - Added version increment parameter support (major/minor/patch)
   - Implemented automatic version calculation and CHANGELOG.md updates
   - Improved UTF-8 encoding handling (UTF8NoBOM)
