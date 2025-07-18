@@ -108,18 +108,18 @@ if not exist "CHANGELOG.md" (
 
 REM Update pyproject.toml version
 echo Updating pyproject.toml...
-powershell -Command "$content = (Get-Content pyproject.toml -Encoding UTF8) -replace '^version = \".*\"', 'version = \"%NEW_VERSION%\"'; [System.IO.File]::WriteAllLines((Resolve-Path 'pyproject.toml'), $content, [System.Text.UTF8Encoding]::new($false))"
+powershell -Command "$content = (Get-Content pyproject.toml -Encoding UTF8) -replace '^version = \".*\"', 'version = \"%NEW_VERSION%\"'; $utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $false; [System.IO.File]::WriteAllText((Resolve-Path 'pyproject.toml'), ($content -join \"`r`n\"), $utf8NoBomEncoding)"
 
 REM Update README.md if it contains version references
 echo Updating README.md...
-powershell -Command "$content = (Get-Content README.md -Encoding UTF8) -replace 'version [0-9]+\.[0-9]+\.[0-9]+', 'version %NEW_VERSION%'; [System.IO.File]::WriteAllLines((Resolve-Path 'README.md'), $content, [System.Text.UTF8Encoding]::new($false))"
+powershell -Command "$content = (Get-Content README.md -Encoding UTF8) -replace 'version [0-9]+\.[0-9]+\.[0-9]+', 'version %NEW_VERSION%'; $utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $false; [System.IO.File]::WriteAllText((Resolve-Path 'README.md'), ($content -join \"`r`n\"), $utf8NoBomEncoding)"
 
 REM Update CHANGELOG.md - replace [Unreleased] with version and date
 echo Updating CHANGELOG.md...
 for /f "tokens=2-4 delims=/ " %%a in ('date /t') do (
     set CURRENT_DATE=%%c-%%a-%%b
 )
-powershell -Command "$content = Get-Content CHANGELOG.md -Raw -Encoding UTF8; $content = $content -replace '## \[Unreleased\]', '## [%NEW_VERSION%] - %CURRENT_DATE%'; $utf8NoBom = New-Object System.Text.UTF8Encoding($false); [System.IO.File]::WriteAllText((Resolve-Path 'CHANGELOG.md'), $content, $utf8NoBom)"
+powershell -Command "$content = Get-Content CHANGELOG.md -Raw -Encoding UTF8; $content = $content -replace '## \[Unreleased\]', '## [%NEW_VERSION%] - %CURRENT_DATE%'; $utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $false; [System.IO.File]::WriteAllText((Resolve-Path 'CHANGELOG.md'), $content, $utf8NoBomEncoding)"
 
 echo.
 echo Version updated successfully!
