@@ -223,6 +223,18 @@ REM Specify project root directory from any location
 subtree_init.bat -rootpath "E:\TestMatrix\my_project"
 ```
 
+#### subtree_init_all.bat - Initialize Subtree for Multiple Folders 🌟
+```batch
+REM Initialize subtree for single folder
+subtree_init_all.bat -rootpath "E:\TestMatrix\my_project"
+
+REM Scan subfolders and initialize subtree for each (depth 1)
+subtree_init_all.bat -subfolder "E:\TestMatrix\projects"
+
+REM Scan subfolders from specific root path
+subtree_init_all.bat -subfolder "E:\TestMatrix\projects" -rootpath "E:\TestMatrix"
+```
+
 #### subtree_pull.bat - Update Subtree
 ```batch
 REM Auto-find project root directory and update
@@ -230,6 +242,18 @@ subtree_pull.bat
 
 REM Specify project root directory
 subtree_pull.bat -rootpath "E:\TestMatrix\my_project"
+```
+
+#### subtree_pull_all.bat - Update Subtree for Multiple Folders 🌟
+```batch
+REM Update subtree for single folder
+subtree_pull_all.bat -rootpath "E:\TestMatrix\my_project"
+
+REM Scan subfolders and update subtree for each (depth 1)
+subtree_pull_all.bat -subfolder "E:\TestMatrix\projects"
+
+REM Scan subfolders from specific root path
+subtree_pull_all.bat -subfolder "E:\TestMatrix\projects" -rootpath "E:\TestMatrix"
 ```
 
 ## Key Features
@@ -267,7 +291,9 @@ template_project/
 │   ├── run_tests.bat          # Run tests
 │   ├── setup_test_env.bat     # Setup test environment
 │   ├── subtree_init.bat       # Initialize Subtree
+│   ├── subtree_init_all.bat   # 🌟 Initialize Subtree for Multiple Folders
 │   ├── subtree_pull.bat       # Update Subtree
+│   ├── subtree_pull_all.bat   # 🌟 Update Subtree for Multiple Folders
 │   ├── update_version.bat     # Update version number
 │   └── ... (other scripts)
 ├── scripts/                   # Unix/Linux scripts
@@ -357,11 +383,15 @@ change_branch.bat feature/new-feature
 
 ### 🌲 Subtree Management Workflow
 ```batch
-REM 1. Initialize subtree
+REM 1. Initialize subtree for single project
 subtree_init.bat -rootpath "E:\TestMatrix\my_project"
 
-REM 2. Update subtree
+REM 2. Update subtree for single project
 subtree_pull.bat -rootpath "E:\TestMatrix\my_project"
+
+REM 3. Bulk operations for multiple projects
+subtree_init_all.bat -subfolder "E:\TestMatrix\all_projects"
+subtree_pull_all.bat -subfolder "E:\TestMatrix\all_projects"
 ```
 
 ## AI Collaboration Examples
@@ -474,7 +504,14 @@ cd template_project
 
 ## Version History
 
-- **v1.2.1**: Release process optimization and rollback mechanism (current version)
+- **v1.2.2**: Bulk subtree management and enhanced automation (current version)
+  - **Added bulk subtree operations**: New subtree_init_all.bat and subtree_pull_all.bat
+  - **Subfolder scanning**: Process multiple projects with -subfolder argument
+  - **Error resilience**: Skip failed folders and continue processing others
+  - **Comprehensive reporting**: Detailed success/failure statistics
+  - **Smart validation**: Automatic checks for git repos and existing subtrees
+
+- **v1.2.1**: Release process optimization and rollback mechanism
   - **Reordered build process**: Version files now updated before wheel build
   - **Added automatic rollback**: Complete git rollback on release failure
   - **Enhanced error handling**: All post-commit errors trigger rollback
