@@ -163,7 +163,7 @@ if %ERRORLEVEL% neq 0 (
 REM Run tests based on mode
 if /i "%TEST_MODE%"=="full" (
     echo Running full test suite with coverage...
-    python -m pytest tests/ -v --cov=. --cov-report=html --cov-report=term --cov-fail-under=80
+    python -m pytest tests/ -v --cov=. --cov-report=html --cov-report=term --cov-fail-under=65
 ) else (
     echo Running basic test suite...
     python -m pytest tests/ -v

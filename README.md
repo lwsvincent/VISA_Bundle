@@ -18,11 +18,10 @@ Template Project is a unified development toolkit designed for multi-person coll
 ### 1. Add to Existing Project
 ```bash
 # Add template project as subtree
-./scripts/subtree-manager.sh add /path/to/your/project
+./scripts/subtree_init.bat -rootpath /path/to/your/project
 
 # Setup project environment
-cd /path/to/your/project/template_project
-./scripts/setup-project.sh
+./scripts/create_venv.bat -local -dev
 ```
 
 ### 2. Immediate Usage
@@ -31,10 +30,10 @@ cd /path/to/your/project/template_project
 cat docs/ai-context/CLAUDE_AI_INSTRUCTIONS.md
 
 # Run one-click release
-./new_scripts/release_project.bat
+./scripts/release_project.bat
 ```
 
-## Windows Batch Scripts (new_scripts/)
+## Windows Batch Scripts (scripts/)
 
 ### 🔧 Environment Management
 
@@ -279,7 +278,7 @@ subtree_pull_all.bat -subfolder "E:\TestMatrix\projects" -rootpath "E:\TestMatri
 
 ```
 template_project/
-├── new_scripts/               # Windows batch scripts
+├── scripts/                   # Windows batch scripts
 │   ├── build_wheel.bat        # Build wheel package
 │   ├── cleanup_build.bat      # Clean build files
 │   ├── create_tag.bat         # Create Git tag
@@ -296,10 +295,6 @@ template_project/
 │   ├── subtree_pull_all.bat   # 🌟 Update Subtree for Multiple Folders
 │   ├── update_version.bat     # Update version number
 │   └── ... (other scripts)
-├── scripts/                   # Unix/Linux scripts
-│   ├── subtree-add.sh         # Add subtree
-│   ├── subtree-sync.sh        # Sync updates
-│   └── setup-project.sh       # Environment setup
 ├── config/                    # Configuration files
 │   └── release-config.yml     # Release configuration
 ├── docs/                      # Documentation directory
@@ -349,7 +344,7 @@ template_project/
 ### 🚀 Automated Release Process (Recommended) ⭐
 ```batch
 REM One-click complete release process
-release_project.bat
+./scripts/release_project.bat
 
 REM Specify version increment type
 release_project.bat -patch    # Patch version (x.x.X)
@@ -384,14 +379,14 @@ change_branch.bat feature/new-feature
 ### 🌲 Subtree Management Workflow
 ```batch
 REM 1. Initialize subtree for single project
-subtree_init.bat -rootpath "E:\TestMatrix\my_project"
+./scripts/subtree_init.bat -rootpath "E:\TestMatrix\my_project"
 
 REM 2. Update subtree for single project
-subtree_pull.bat -rootpath "E:\TestMatrix\my_project"
+./scripts/subtree_pull.bat -rootpath "E:\TestMatrix\my_project"
 
 REM 3. Bulk operations for multiple projects
-subtree_init_all.bat -subfolder "E:\TestMatrix\all_projects"
-subtree_pull_all.bat -subfolder "E:\TestMatrix\all_projects"
+./scripts/subtree_init_all.bat -subfolder "E:\TestMatrix\all_projects"
+./scripts/subtree_pull_all.bat -subfolder "E:\TestMatrix\all_projects"
 ```
 
 ## AI Collaboration Examples
@@ -431,22 +426,23 @@ Test requirements:
 ### Subtree Management
 ```bash
 # Add template project to new project
-./scripts/subtree-manager.sh add /path/to/target/project
+./scripts/subtree_init.bat -rootpath /path/to/target/project
 
 # Get latest template project updates
-./scripts/subtree-manager.sh pull /path/to/target/project
+./scripts/subtree_pull.bat -rootpath /path/to/target/project
 
-# Push local improvements back to template project
-./scripts/subtree-manager.sh push /path/to/target/project
+# Batch operations for multiple projects
+./scripts/subtree_init_all.bat -subfolder /path/to/projects
+./scripts/subtree_pull_all.bat -subfolder /path/to/projects
 ```
 
 ### Batch Management
-```bash
-# Update all projects
-./scripts/update-all-projects.sh
+```batch
+# Update all projects with subtree
+./scripts/subtree_pull_all.bat -subfolder /path/to/projects
 
-# Batch setup
-./scripts/batch-setup.sh
+# Initialize subtree for all projects
+./scripts/subtree_init_all.bat -subfolder /path/to/projects
 ```
 
 ## Supported Project Types
@@ -468,14 +464,14 @@ Test requirements:
 - Python 3.7+
 - Git for Windows
 
-### Unix/Linux Scripts
-- Bash (Windows can use Git Bash)
-- Standard Unix tools
+### Cross-Platform Support
+- Primary: Windows batch scripts (scripts/)
+- Full automation support for Windows environments
 
 ## Troubleshooting
 
 ### Common Issues
-1. **Script permission issues**: Execute `chmod +x template_project/scripts/*.sh`
+1. **Script permission issues**: Ensure Windows batch scripts are executable
 2. **Release branch detection failure**: Ensure using single `release` branch (not `release/*`)
 3. **Windows encoding issues**: Ensure files are saved with UTF-8 encoding
 4. **Virtual environment issues**: Check Python environment and permission settings
@@ -496,10 +492,11 @@ settings:
 4. Create Pull Request
 
 ### Development Setup
-```bash
+```batch
 git clone <your-fork>
 cd template_project
-./scripts/setup-development.sh
+./scripts/create_venv.bat -local -dev
+./scripts/run_tests.bat
 ```
 
 ## Version History

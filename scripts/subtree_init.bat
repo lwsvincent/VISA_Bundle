@@ -1,36 +1,16 @@
 @echo off
 setlocal enabledelayedexpansion
 REM Script to initialize git subtree for template_project
-REM Usage: subtree_init.bat [-rootpath <path>]
+REM Usage: subtree_init.bat [<path>]
 REM This script should be run from the project root or specify -rootpath
 
 echo Initializing git subtree for template_project...
 
 REM Parse command line arguments
-set PROJECT_ROOT=
-set ROOTPATH_SPECIFIED=0
+set PROJECT_ROOT=%~1
 
-:parse_args
-if "%~1"=="" goto :args_done
-if /i "%~1"=="-rootpath" (
-    set ROOTPATH_SPECIFIED=1
-    if "%~2"=="" (
-        echo ERROR: -rootpath requires a path argument
-        exit /b 1
-    )
-    set PROJECT_ROOT=%~2
-    shift
-    shift
-    goto :parse_args
-)
-REM Skip unknown arguments
-shift
-goto :parse_args
-
-:args_done
-
-REM If no rootpath specified, use current directory
-if %ROOTPATH_SPECIFIED%==0 (
+REM If no path specified, use current directory
+if "%PROJECT_ROOT%"=="" (
     set PROJECT_ROOT=%CD%
 )
 

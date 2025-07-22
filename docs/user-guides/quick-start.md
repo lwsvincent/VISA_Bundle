@@ -50,19 +50,17 @@ Template Project 的 pre-push hooks 和 release 自動化會自動：
 ### 1. 添加到現有專案
 ```bash
 # 在template_project目錄中執行
-./scripts/subtree-add.sh <your-project-path>
+./new_scripts/subtree_init.bat -rootpath <your-project-path>
 
 # 例如：
-./scripts/subtree-add.sh ../am_report_generator
+./new_scripts/subtree_init.bat -rootpath ../am_report_generator
 ```
 
 ### 2. 設置專案環境
 ```bash
-# 進入目標專案的template_project目錄
+# 設置虛擬環境（推薦）
 cd <your-project>/template_project
-
-# 執行設置腳本
-./scripts/setup-project.sh
+./new_scripts/create_venv.bat -local -dev
 ```
 
 ### 3. 驗證安裝
@@ -203,13 +201,14 @@ python:
 ### 獲取最新模板
 ```bash
 # 在專案根目錄執行
-./template_project/scripts/subtree-sync.sh pull .
+./template_project/new_scripts/subtree_pull.bat -rootpath .
 ```
 
 ### 推送改進到模板
 ```bash
 # 將本地修改推送回模板專案
-./template_project/scripts/subtree-sync.sh push .
+# 推送改進功能已移至new_scripts批量管理
+# 建議通過Git直接提交並推送改進到template repository
 ```
 
 ## 故障排除
@@ -243,9 +242,9 @@ chmod +x template_project/.git-hooks/*
 
 #### 4. Git hooks未安裝
 ```bash
-# 重新安裝hooks
+# 重新創建環境
 cd template_project
-./scripts/setup-project.sh
+./new_scripts/create_venv.bat -local -dev
 ```
 
 ### 調試模式

@@ -38,7 +38,7 @@ Git Subtree是Git的一個功能，允許將一個Git倉庫作為另一個Git倉
 git subtree add --prefix=<目錄名> <遠程倉庫> <分支> --squash
 
 # 使用我們的腳本（推薦）
-./scripts/subtree-add.sh <目標專案路徑>
+./new_scripts/subtree_init.bat -rootpath <目標專案路徑>
 
 # 手動添加範例
 cd /path/to/your/project
@@ -51,7 +51,7 @@ git subtree add --prefix=template_project /path/to/template_project main --squas
 git subtree pull --prefix=<目錄名> <遠程倉庫> <分支> --squash
 
 # 使用我們的腳本（推薦）
-./scripts/subtree-sync.sh pull <目標專案路徑>
+./new_scripts/subtree_pull.bat -rootpath <目標專案路徑>
 
 # 手動拉取範例
 git subtree pull --prefix=template_project /path/to/template_project main --squash
@@ -62,8 +62,8 @@ git subtree pull --prefix=template_project /path/to/template_project main --squa
 # 語法
 git subtree push --prefix=<目錄名> <遠程倉庫> <分支>
 
-# 使用我們的腳本（推薦）
-./scripts/subtree-sync.sh push <目標專案路徑>
+# 批量操作已移至new_scripts
+# 建議使用Git直接管理推送操作
 
 # 手動推送範例
 git subtree push --prefix=template_project /path/to/template_project main
@@ -84,11 +84,11 @@ git add .
 git commit -m "Initial commit"
 
 # 3. 添加template project
-/path/to/template_project/scripts/subtree-add.sh .
+/path/to/template_project/new_scripts/subtree_init.bat -rootpath .
 
 # 4. 設置環境
 cd template_project
-./scripts/setup-project.sh
+./new_scripts/create_venv.bat -local -dev
 ```
 
 ### 場景2：現有專案集成Template Project
@@ -97,21 +97,21 @@ cd template_project
 cd /path/to/existing/project
 
 # 2. 添加template project
-/path/to/template_project/scripts/subtree-add.sh .
+/path/to/template_project/new_scripts/subtree_init.bat -rootpath .
 
 # 3. 設置環境
 cd template_project
-./scripts/setup-project.sh
+./new_scripts/create_venv.bat -local -dev
 ```
 
 ### 場景3：同步Template Project更新
 ```bash
 # 在專案根目錄
-./template_project/scripts/subtree-sync.sh pull .
+./template_project/new_scripts/subtree_pull.bat -rootpath .
 
 # 重新安裝hooks（如果有更新）
 cd template_project
-./scripts/setup-project.sh
+./new_scripts/create_venv.bat -local -dev
 ```
 
 ### 場景4：貢獻改進回Template Project
@@ -124,7 +124,8 @@ git add .
 git commit -m "Improve pre-push rules"
 
 # 3. 推送改進回template project
-./template_project/scripts/subtree-sync.sh push .
+# 批量推送功能已移至new_scripts
+# 建議直接使用Git提交並推送改進
 ```
 
 ## 多專案管理
@@ -142,7 +143,7 @@ PROJECTS=(
 
 for project in "${PROJECTS[@]}"; do
     echo "Updating $project..."
-    ./scripts/subtree-sync.sh pull "$project"
+    ./new_scripts/subtree_pull.bat -rootpath "$project"
 done
 EOF
 
