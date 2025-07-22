@@ -84,8 +84,29 @@ set VENV_PATH=%PROJECT_ROOT%\%VENV_NAME%
 REM Check if virtual environment already exists
 if exist "%VENV_PATH%" (
     echo Virtual environment already exists at: %VENV_PATH%
-    echo Delete it first if you want to recreate it.
-    exit /b 1
+    echo.
+    echo What would you like to do?
+    echo   1. Delete and reinstall
+    echo   2. Cancel operation
+    echo.
+    set /p CHOICE="Enter your choice (1 or 2): "
+    
+    if "!CHOICE!"=="1" (
+        echo Deleting existing virtual environment...
+        rmdir /s /q "%VENV_PATH%"
+        if !ERRORLEVEL! neq 0 (
+            echo ERROR: Failed to delete existing virtual environment
+            exit /b 1
+        )
+        echo Existing virtual environment deleted successfully.
+        echo.
+    ) else if "!CHOICE!"=="2" (
+        echo Operation cancelled.
+        exit /b 0
+    ) else (
+        echo Invalid choice. Operation cancelled.
+        exit /b 1
+    )
 )
 
 REM Create virtual environment

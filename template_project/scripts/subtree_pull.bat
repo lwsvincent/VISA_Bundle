@@ -1,48 +1,19 @@
 @echo off
 setlocal enabledelayedexpansion
 REM Script to pull updates from template_project subtree
-REM Usage: subtree_pull.bat [-rootpath <path>]
+REM Usage: subtree_pull.bat [<path>]
 REM This script can be run from anywhere and will find the project root
 
 echo Pulling updates from template_project subtree...
 
 REM Parse command line arguments
-set PROJECT_ROOT=
-set ROOTPATH_SPECIFIED=0
+set PROJECT_ROOT=%~1
 
-echo DEBUG: Processing arguments: %*
+REM If no path specified, find project root by looking for pyproject.toml
+if "%PROJECT_ROOT%"=="" goto :auto_detect
+goto :validate_path
 
-:parse_args
-echo DEBUG: Current argument: "%~1"
-if "%~1"=="" goto :args_done
-if /i "%~1"=="-rootpath" (
-    echo DEBUG: Found -rootpath argument
-    set ROOTPATH_SPECIFIED=1
-    if "%~2"=="" (
-        echo ERROR: -rootpath requires a path argument
-        exit /b 1
-    )
-    set PROJECT_ROOT=%~2
-    echo DEBUG: Set PROJECT_ROOT to: %~2
-    shift
-    shift
-    goto :parse_args
-)
-REM Skip unknown arguments
-echo DEBUG: Skipping unknown argument: %~1
-shift
-goto :parse_args
-
-:args_done
-echo DEBUG: ROOTPATH_SPECIFIED=%ROOTPATH_SPECIFIED%
-echo DEBUG: ROOTPATH_SPECIFIED with delayed expansion=!ROOTPATH_SPECIFIED!
-echo DEBUG: PROJECT_ROOT=%PROJECT_ROOT%
-echo DEBUG: About to check if !ROOTPATH_SPECIFIED!==0
-
-REM If no rootpath specified, find project root by looking for pyproject.toml
-if !ROOTPATH_SPECIFIED!==1 goto :validate_rootpath
-
-echo DEBUG: Entering auto-detection branch - THIS SHOULD NOT HAPPEN
+:auto_detect
 set SEARCH_DIR=%CD%
 
 REM Check current directory first
@@ -76,18 +47,15 @@ if exist "%GREAT_GRANDPARENT_DIR%\pyproject.toml" (
 )
 
 echo ERROR: Project root not found (no pyproject.toml found)
-echo Please run this script from within the project directory structure or use -rootpath
+echo Please run this script from within the project directory structure or specify path
 exit /b 1
 
-:validate_rootpath
-echo DEBUG: Entering rootpath validation branch
-REM Rootpath was specified, validate it
-echo DEBUG: Validating rootpath: !PROJECT_ROOT!
-if not exist "!PROJECT_ROOT!" (
-    echo ERROR: Specified root path does not exist: !PROJECT_ROOT!
+:validate_path
+REM Path was specified, validate it
+if not exist "%PROJECT_ROOT%" (
+    echo ERROR: Specified path does not exist: %PROJECT_ROOT%
     exit /b 1
 )
-echo DEBUG: Rootpath validation passed
 
 :found_root
 echo Found project root: !PROJECT_ROOT!
@@ -178,6 +146,11 @@ if %ERRORLEVEL% neq 0 (
     echo No changes to commit (subtree already up to date)
 )
 
+REM Merge gitignore files
+echo.
+echo Merging .gitignore files...
+call :merge_gitignore
+
 REM Show what changed
 echo.
 echo Showing recent changes:
@@ -192,3 +165,76 @@ echo Changes have been automatically committed to your current branch.
 
 REM Restore original working directory
 cd /d "%ORIGINAL_DIR%"
+exit /b 0
+
+:merge_gitignore
+REM Function to merge template_project/.gitignore with root .gitignore
+echo Checking for .gitignore files to merge...
+
+set TEMPLATE_GITIGNORE=%PROJECT_ROOT%\template_project\.gitignore
+set ROOT_GITIGNORE=%PROJECT_ROOT%\.gitignore
+
+REM Check if template_project/.gitignore exists
+if not exist "%TEMPLATE_GITIGNORE%" (
+    echo No .gitignore found in template_project, skipping merge
+    goto :eof
+)
+
+echo Found template_project/.gitignore, proceeding with merge...
+
+REM Create root .gitignore if it doesn't exist
+if not exist "%ROOT_GITIGNORE%" (
+    echo Creating new root .gitignore...
+    echo # Generated .gitignore> "%ROOT_GITIGNORE%"
+    echo # Merged from template_project/.gitignore>> "%ROOT_GITIGNORE%"
+    echo.>> "%ROOT_GITIGNORE%"
+)
+
+REM Create a temporary file to store merged content
+set TEMP_GITIGNORE=%PROJECT_ROOT%\.gitignore.tmp
+
+REM Start with existing root .gitignore content
+copy "%ROOT_GITIGNORE%" "%TEMP_GITIGNORE%" >nul
+
+REM Add separator and template content
+echo.>> "%TEMP_GITIGNORE%"
+echo # === Merged from template_project/.gitignore ===>> "%TEMP_GITIGNORE%"
+
+REM Read template .gitignore line by line and append unique entries
+for /f "usebackq delims=" %%a in ("%TEMPLATE_GITIGNORE%") do (
+    set "line=%%a"
+    if "!line!" neq "" (
+        REM Check if line already exists in root .gitignore (case insensitive)
+        findstr /i /x /c:"!line!" "%ROOT_GITIGNORE%" >nul 2>&1
+        if !ERRORLEVEL! neq 0 (
+            echo !line!>> "%TEMP_GITIGNORE%"
+        )
+    )
+)
+
+REM Replace original with merged content
+move "%TEMP_GITIGNORE%" "%ROOT_GITIGNORE%" >nul
+
+echo Successfully merged template_project/.gitignore into root .gitignore
+
+REM Stage the updated .gitignore if there are changes
+git diff --quiet "%ROOT_GITIGNORE%" >nul 2>&1
+if %ERRORLEVEL% neq 0 (
+    echo Staging updated .gitignore...
+    git add "%ROOT_GITIGNORE%"
+    git commit -m "Merge .gitignore from template_project subtree
+
+    - Added entries from template_project/.gitignore
+    - Avoided duplicates and maintained existing entries
+    - Auto-committed by subtree_pull.bat script"
+    
+    if %ERRORLEVEL% equ 0 (
+        echo .gitignore merge committed successfully!
+    ) else (
+        echo WARNING: Failed to commit .gitignore changes
+    )
+) else (
+    echo No new entries found, .gitignore unchanged
+)
+
+goto :eof
