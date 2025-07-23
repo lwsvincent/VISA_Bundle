@@ -2,7 +2,8 @@
 setlocal enabledelayedexpansion
 REM Script to pull updates from template_project subtree in multiple folders
 REM Usage: subtree_pull_all.bat [-subfolder <path>] [-rootpath <path>]
-REM This script can scan subfolders and apply subtree pull to each (depth 1)
+REM This script is designed to run from projects/template_project/scripts/
+REM By default, it scans all project directories in projects/ for subtree updates
 
 echo Pulling updates from template_project subtree in multiple folders...
 
@@ -44,11 +45,14 @@ goto :parse_args
 
 REM Set default paths if not specified
 if %ROOTPATH_SPECIFIED%==0 (
-    set PROJECT_ROOT=%CD%
+    REM Default: assume we're in projects/template_project/scripts and want to scan projects/
+    set SCRIPT_CURRENT_DIR=%~dp0
+    for %%i in ("!SCRIPT_CURRENT_DIR!..\..\..") do set PROJECT_ROOT=%%~fi
 )
 
 if %SUBFOLDER_SPECIFIED%==0 (
-    set SUBFOLDER_PATH=%PROJECT_ROOT%
+    REM Default: scan all sibling projects in the projects directory
+    for %%i in ("!SCRIPT_CURRENT_DIR!..\..") do set SUBFOLDER_PATH=%%~fi
 )
 
 echo Root path: %PROJECT_ROOT%
@@ -80,16 +84,40 @@ set TOTAL_FOLDERS=0
 set SUCCESS_COUNT=0
 set FAILED_COUNT=0
 set SKIPPED_COUNT=0
+set SUCCESS_PATHS=
+set FAILED_PATHS=
+set SKIPPED_PATHS=
 
 REM If subfolder specified, scan its subdirectories (depth 1)
 if %SUBFOLDER_SPECIFIED%==1 (
     echo Scanning subfolders in: %SUBFOLDER_PATH%
     for /d %%D in ("%SUBFOLDER_PATH%\*") do (
-        call :process_folder "%%D"
+        REM Skip the template_project itself to avoid self-processing
+        for %%F in ("%%D") do (
+            if /i not "%%~nxF"=="template_project" (
+                call :process_folder "%%D"
+            ) else (
+                echo SKIP: Skipping template_project directory: %%D
+                set /a SKIPPED_COUNT+=1
+                set SKIPPED_PATHS=!SKIPPED_PATHS! "%%D"
+            )
+        )
     )
 ) else (
-    REM Process the single root folder
-    call :process_folder "%PROJECT_ROOT%"
+    REM Default behavior: scan all projects except template_project
+    echo Scanning project directories in: %SUBFOLDER_PATH%
+    for /d %%D in ("%SUBFOLDER_PATH%\*") do (
+        REM Skip the template_project itself to avoid self-processing
+        for %%F in ("%%D") do (
+            if /i not "%%~nxF"=="template_project" (
+                call :process_folder "%%D"
+            ) else (
+                echo SKIP: Skipping template_project directory: %%D
+                set /a SKIPPED_COUNT+=1
+                set SKIPPED_PATHS=!SKIPPED_PATHS! "%%D"
+            )
+        )
+    )
 )
 
 echo.
@@ -101,6 +129,24 @@ echo Successful pulls: !SUCCESS_COUNT!
 echo Failed pulls: !FAILED_COUNT!
 echo Skipped folders: !SKIPPED_COUNT!
 echo.
+
+if !SUCCESS_COUNT! gtr 0 (
+    echo SUCCESSFUL PATHS:
+    for %%p in (!SUCCESS_PATHS!) do echo   ✓ %%p
+    echo.
+)
+
+if !FAILED_COUNT! gtr 0 (
+    echo FAILED PATHS:
+    for %%p in (!FAILED_PATHS!) do echo   ✗ %%p
+    echo.
+)
+
+if !SKIPPED_COUNT! gtr 0 (
+    echo SKIPPED PATHS:
+    for %%p in (!SKIPPED_PATHS!) do echo   - %%p
+    echo.
+)
 
 if !FAILED_COUNT! gtr 0 (
     echo Some folders failed to pull. Check the output above for details.
@@ -128,6 +174,7 @@ cd /d "%FOLDER_PATH%" 2>nul
 if %ERRORLEVEL% neq 0 (
     echo SKIP: Cannot access folder: %FOLDER_PATH%
     set /a SKIPPED_COUNT+=1
+    set SKIPPED_PATHS=!SKIPPED_PATHS! "%FOLDER_PATH%"
     goto :process_folder_end
 )
 
@@ -135,6 +182,7 @@ git rev-parse --is-inside-work-tree >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     echo SKIP: Not a git repository: %FOLDER_PATH%
     set /a SKIPPED_COUNT+=1
+    set SKIPPED_PATHS=!SKIPPED_PATHS! "%FOLDER_PATH%"
     goto :process_folder_end
 )
 
@@ -143,6 +191,7 @@ if not exist "%FOLDER_PATH%\template_project" (
     echo SKIP: template_project does not exist in: %FOLDER_PATH%
     echo       Run subtree_init_all.bat first to initialize
     set /a SKIPPED_COUNT+=1
+    set SKIPPED_PATHS=!SKIPPED_PATHS! "%FOLDER_PATH%"
     goto :process_folder_end
 )
 
@@ -152,19 +201,22 @@ if %ERRORLEVEL% neq 0 (
     echo SKIP: Working tree has modifications in: %FOLDER_PATH%
     echo       Please commit or stash changes first
     set /a SKIPPED_COUNT+=1
+    set SKIPPED_PATHS=!SKIPPED_PATHS! "%FOLDER_PATH%"
     goto :process_folder_end
 )
 
 REM Call subtree_pull.bat for this folder
 echo Calling subtree_pull.bat for: %FOLDER_PATH%
-call "%SCRIPT_DIR%subtree_pull.bat" -rootpath "%FOLDER_PATH%"
+call "%SCRIPT_DIR%subtree_pull.bat" "%FOLDER_PATH%"
 
 if %ERRORLEVEL% neq 0 (
     echo FAILED: Subtree pull failed for: %FOLDER_PATH%
     set /a FAILED_COUNT+=1
+    set FAILED_PATHS=!FAILED_PATHS! "%FOLDER_PATH%"
 ) else (
     echo SUCCESS: Subtree pull completed for: %FOLDER_PATH%
     set /a SUCCESS_COUNT+=1
+    set SUCCESS_PATHS=!SUCCESS_PATHS! "%FOLDER_PATH%"
 )
 
 :process_folder_end
