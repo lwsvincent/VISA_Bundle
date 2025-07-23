@@ -130,11 +130,7 @@ git diff --cached --quiet >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     echo.
     echo Auto-committing subtree pull changes...
-    git commit -m "Update template_project subtree from %REMOTE_URL%
-
-    - Pulled latest changes from %BRANCH% branch
-    - Updated template_project at %PROJECT_ROOT%\template_project
-    - Auto-committed by subtree_pull.bat script"
+    git commit -m "Update template_project subtree from %REMOTE_URL%" -m "- Pulled latest changes from %BRANCH% branch" -m "- Updated template_project at %PROJECT_ROOT%\template_project" -m "- Auto-committed by subtree_pull.bat script"
     
     if %ERRORLEVEL% neq 0 (
         echo ERROR: Failed to commit subtree changes
@@ -222,11 +218,7 @@ git diff --quiet "%ROOT_GITIGNORE%" >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     echo Staging updated .gitignore...
     git add "%ROOT_GITIGNORE%"
-    git commit -m "Merge .gitignore from template_project subtree
-
-    - Added entries from template_project/.gitignore
-    - Avoided duplicates and maintained existing entries
-    - Auto-committed by subtree_pull.bat script"
+    git commit -m "Merge .gitignore from template_project subtree" -m "- Added entries from template_project/.gitignore" -m "- Avoided duplicates and maintained existing entries" -m "- Auto-committed by subtree_pull.bat script"
     
     if %ERRORLEVEL% equ 0 (
         echo .gitignore merge committed successfully!
