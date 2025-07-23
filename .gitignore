@@ -267,3 +267,5 @@ jspm_packages/
 # Build outputs
 *.tgz
 *.tar.gz
+
+# === Merged from template_project/.gitignore ===
