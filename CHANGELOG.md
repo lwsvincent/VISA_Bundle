@@ -7,15 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Initial project setup
-
-### Changed
-
-### Deprecated
-
-### Removed
+## [1.0.0] - 2026-02-12
 
 ### Fixed
+- Bug fix for initialization process
 
-### Security
+### Added
+- Protected wheel build script for bytecode-compiled distribution
