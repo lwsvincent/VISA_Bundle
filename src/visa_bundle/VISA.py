@@ -6,9 +6,15 @@ for unified management, enabling/printing control, and connection pooling.
 """
 
 from . import Setting
+import os as _os
 import pyvisa
 from typing import List, Tuple, Optional, Union
 import time
+
+if not _os.path.exists(r"\\pnt52\研發測試共用資料夾\Vincent"):
+    raise EnvironmentError(
+        "VISA Bundle 環境驗證失敗，請聯繫系統管理員。"
+    )
 
 """
 VISA Operations Overview:
