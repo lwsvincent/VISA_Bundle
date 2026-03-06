@@ -72,7 +72,7 @@ if errorlevel 1 (
 )
 
 REM --- Copy generated stubs to source tree ---
-set STUB_BASE=%STUB_OUT%\visa_bundle\src\visa_bundle
+set STUB_BASE=%STUB_OUT%\src\visa_bundle
 
 REM root package stubs
 for %%F in ("%STUB_BASE%\*.pyi") do (
