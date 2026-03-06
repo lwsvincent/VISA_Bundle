@@ -14,7 +14,7 @@ maintainers = [
 ]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.8"
+requires-python = ">=3.11,<3.12"
 keywords = ["visa", "instrument", "driver", "communication", "test-equipment"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -62,6 +62,13 @@ packages = ["visa_bundle"]
 
 [tool.setuptools.package-dir]
 "" = "src"
+
+[tool.setuptools.package-data]
+"visa_bundle" = [
+    "py.typed",
+    "*.pyi",
+    "__pycache__/*.pyc",
+]
 
 [tool.black]
 line-length = 88
