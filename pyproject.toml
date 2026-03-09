@@ -67,7 +67,7 @@ packages = ["visa_bundle"]
 "visa_bundle" = [
     "py.typed",
     "*.pyi",
-    "__pycache__/*.pyc",
+    "*.pyc",
 ]
 
 [tool.black]

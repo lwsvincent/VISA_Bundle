@@ -38,7 +38,7 @@ class BuildPyWithPyc(build_py):
             str(pkg_build_dir),
             force=True,
             quiet=1,
-            legacy=False,   # Use __pycache__/name.cpython-311.pyc layout
+            legacy=True,   # Use __pycache__/name.cpython-311.pyc layout
             optimize=0,     # Standard .pyc (no optimization)
         )
 
