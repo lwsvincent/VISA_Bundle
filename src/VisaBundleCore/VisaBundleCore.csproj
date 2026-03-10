@@ -1,0 +1,71 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- 目標框架：.NET Framework 4.8 提供最佳 pythonnet 兼容性 -->
+    <TargetFramework>net48</TargetFramework>
+
+    <!-- 輸出類型：類別庫（DLL） -->
+    <OutputType>Library</OutputType>
+
+    <!-- 組件名稱 -->
+    <AssemblyName>VisaBundleCore</AssemblyName>
+
+    <!-- 根命名空間 -->
+    <RootNamespace>VisaBundle.Core</RootNamespace>
+
+    <!-- 輸出路徑：放到專案根目錄的 bin/ -->
+    <OutputPath>../../bin/$(Configuration)/</OutputPath>
+
+    <!-- 平台目標 -->
+    <PlatformTarget>AnyCPU</PlatformTarget>
+
+    <!-- 語言版本 -->
+    <LangVersion>latest</LangVersion>
+
+    <!-- 可為 null 的參考型別 -->
+    <Nullable>enable</Nullable>
+
+    <!-- 版本資訊 -->
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+
+    <!-- 產品資訊 -->
+    <Product>VISA Bundle Core</Product>
+    <Company>DS Platform Team</Company>
+    <Description>C# core library for VISA instrument communication</Description>
+    <Copyright>Copyright © 2025 DS Platform Team</Copyright>
+
+    <!-- 產生 XML 文檔 -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- NI-VISA .NET API -->
+    <!-- 注意：需要先在系統上安裝 NI-VISA 驅動程式 -->
+    <!-- 可選方案 1：使用 NuGet 套件（如果可用） -->
+    <!-- <PackageReference Include="NationalInstruments.Visa" Version="21.0.0" /> -->
+
+    <!-- 可選方案 2：使用本機 DLL 參考 -->
+    <!-- 預設 NI-VISA 安裝路徑在 C:\Program Files\IVI Foundation\VISA\VisaDotNET\ -->
+    <!-- 需要根據實際環境調整 -->
+
+    <!-- 暫時使用 IVI.NET VISA 介面定義（開源選項） -->
+    <!-- 實際部署時可能需要調整為 NI-VISA -->
+    <!-- <PackageReference Include="Ivi.Visa" Version="5.12.0" /> -->
+  </ItemGroup>
+
+  <!-- 編譯器設定 -->
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+</Project>
