@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-03-13
+
+### Added
+- Add `py.typed` marker file for PEP 561 type hint compliance
+
 ## [2.0.0] - 2026-03-06
 
 ### Added
