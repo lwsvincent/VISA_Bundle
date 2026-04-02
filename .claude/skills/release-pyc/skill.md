@@ -78,6 +78,36 @@ To verify the wheel installs and tests pass:
 call template_project\scripts\run_tests.bat
 ```
 
+## Upload to PNT52
+
+After verifying the wheel, upload to the internal package share.
+
+PNT52 path: `\\pnt52\研發本部_技術服務處\技術服務處\DS-TA\Test_Matrix\packages`
+
+**IMPORTANT: Do NOT use bash heredoc (`<< 'EOF'`) to write the upload script.**
+Bash heredoc reduces `\\` to `\`, turning the UNC path into a local drive path (e.g. `D:\pnt52\...`).
+
+**Correct method: use the `Write` tool** to create `dist/_upload.py`, then execute it:
+
+```python
+# dist/_upload.py  (create with Write tool, NOT bash heredoc)
+import shutil, pathlib
+src = r"<absolute-path-to-wheel>"
+dst = r"\\pnt52\研發本部_技術服務處\技術服務處\DS-TA\Test_Matrix\packages"
+print(f"Copying {pathlib.Path(src).name} to {dst}")
+shutil.copy2(src, dst)
+print("Upload complete.")
+```
+
+Then execute and clean up:
+```bash
+.venv/Scripts/python.exe dist/_upload.py && rm dist/_upload.py
+```
+
+Verify the print output shows `\\pnt52\` (double backslash). If it shows `\pnt52\` (single backslash), the path is wrong and the file was copied to a local drive instead.
+
+---
+
 ## Notes
 
 - This wheel is **Python 3.11 only** -- will not install on 3.10 or 3.12
