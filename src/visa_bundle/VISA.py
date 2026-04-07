@@ -10,8 +10,25 @@ import os as _os
 import pyvisa
 from typing import List, Tuple, Optional, Union
 import time
+import subprocess as _subprocess
 
-if not _os.path.exists(r"\\pnt52\研發測試共用資料夾\Vincent"):
+
+def _ping(host: str) -> bool:
+    try:
+        result = _subprocess.run(
+            ["ping", "-n", "1", "-w", "1000", host],
+            stdout=_subprocess.DEVNULL,
+            stderr=_subprocess.DEVNULL,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+_pnt52_ok = _os.path.exists(r"\\pnt52\研發測試共用資料夾\Vincent")
+_fallback_ok = not _pnt52_ok and _ping("dq-ework.apitech.com.tw")
+
+if not (_pnt52_ok or _fallback_ok):
     raise EnvironmentError(
         "VISA Bundle 環境驗證失敗，請聯繫系統管理員。"
     )
