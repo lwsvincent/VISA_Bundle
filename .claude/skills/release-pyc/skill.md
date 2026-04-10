@@ -2,6 +2,7 @@
 name: release-pyc
 description: This skill should be used when the user asks to "build pyc wheel", "release pyc", "build protected wheel", "compile visa_bundle", or wants to create a cp311 wheel with IP-protected bytecode.
 version: 1.1.0
+model: haiku
 ---
 
 # Skill: release-pyc
