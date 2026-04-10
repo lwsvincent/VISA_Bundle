@@ -125,8 +125,6 @@ class VISA:
                     break  # Success, exit retry loop
                 except Exception:
                     time.sleep(1)
-                    if attempt == retry_max - 1:  # Last attempt failed
-                        raise
 
             if self.handle is None:
                 raise Exception(
