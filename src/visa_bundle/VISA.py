@@ -119,9 +119,12 @@ class VISA:
                 try:
                     resource_manager = pyvisa.ResourceManager()
                     self.handle = resource_manager.open_resource(self.address)
-                    if hasattr(self.handle, 'clear'):
-                        self.handle.clear()
-                    time.sleep(0.5)
+                    try:
+                        if hasattr(self.handle, 'clear'):
+                            self.handle.clear()
+                        time.sleep(0.5)
+                    except Exception:
+                        pass  # Ignore clear errors
                     break  # Success, exit retry loop
                 except Exception:
                     time.sleep(1)
