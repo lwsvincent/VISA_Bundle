@@ -84,7 +84,7 @@ class VISA:
         # Automatically open connection on initialization
         self.open()
 
-    def open(self) -> None:
+    def open(self, skip_clear: bool = False) -> None:
         """
         Open VISA connection if not already open.
 
@@ -120,7 +120,7 @@ class VISA:
                     resource_manager = pyvisa.ResourceManager()
                     self.handle = resource_manager.open_resource(self.address)
                     try:
-                        if hasattr(self.handle, 'clear'):
+                        if hasattr(self.handle, 'clear') and not skip_clear:
                             self.handle.clear()
                         time.sleep(0.5)
                     except Exception:
