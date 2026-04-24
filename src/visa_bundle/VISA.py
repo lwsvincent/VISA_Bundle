@@ -68,7 +68,7 @@ class VISA:
     connection management, error handling, and debug capabilities.
     """
 
-    def __init__(self, name: str, address: str):
+    def __init__(self, name: str, address: str, skip_clear: bool = False):
         """
         Initialize VISA instrument instance.
 
@@ -82,7 +82,7 @@ class VISA:
                                     pyvisa.resources.Resource]] = None
 
         # Automatically open connection on initialization
-        self.open()
+        self.open(skip_clear=skip_clear)
 
     def open(self, skip_clear: bool = False) -> None:
         """
