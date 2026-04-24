@@ -5,7 +5,7 @@ VISA Bundle - 高效的 Python VISA 儀器控制包
 提供統一的 VISA 介面管理，包含連線追蹤、錯誤處理和全域設定功能。
 """
 
-__version__ = "2.0.3"
+__version__ = "2.0.4"
 __author__ = "DS Platform Team"
 __email__ = "support@dsplatform.com"
 
