@@ -11,6 +11,7 @@ import pyvisa
 from typing import List, Tuple, Optional, Union
 import time
 import subprocess as _subprocess
+from am_shared.logger import logger
 
 
 def _ping(host: str) -> bool:
@@ -98,7 +99,7 @@ class VISA:
 
         # Debug output if enabled
         if Setting.VISA_Print_Enable:
-            print(f"Open VISA: {self.name}")
+            logger.debug(f"Open VISA: {self.name}")
 
         # Skip actual connection if VISA is disabled
         if not Setting.VISA_Send_Enable:
@@ -150,7 +151,7 @@ class VISA:
 
         # Debug output if enabled
         if Setting.VISA_Print_Enable:
-            print(f"Close VISA: {self.name}")
+            logger.debug(f"Close VISA: {self.name}")
 
         # Skip actual closure if VISA is disabled
         if not Setting.VISA_Send_Enable:
@@ -172,6 +173,21 @@ class VISA:
             # Clear the handle reference
             self.handle = None
 
+    def _flush_input_buffer(self) -> None:
+        """
+        Flush the instrument's input buffer before sending a new command.
+
+        Not all VISA backends/instruments support buffer flushing, so any
+        failure here is silently ignored and must never interrupt normal
+        communication.
+        """
+        handle = self.handle
+        if isinstance(handle, pyvisa.resources.MessageBasedResource):
+            try:
+                handle.flush(pyvisa.constants.BufferOperation.discard_receive_buffer)
+            except Exception:
+                pass  # Flush not supported by this backend/instrument; ignore
+
     def query(self, command: str, delay_time: Optional[float] = None) -> str:
         """
         Send a command and read the response.
@@ -189,7 +205,7 @@ class VISA:
         """
         # Debug output if enabled
         if Setting.VISA_Print_Enable:
-            print(f"[{self.name}] Query: {command}")
+            logger.debug(f"SCPI TX: {command}")
 
         # Return dummy response if VISA is disabled
         if not Setting.VISA_Send_Enable:
@@ -198,20 +214,24 @@ class VISA:
         # Ensure we have a valid message-based resource
         if isinstance(self.handle, pyvisa.resources.MessageBasedResource):
             try:
+                # Discard stale data from a previous transaction before sending
+                self._flush_input_buffer()
+
                 # Send command and read response
                 response = self.handle.query(command, delay_time)
 
                 # Debug output if enabled
                 if Setting.VISA_Print_Enable:
-                    print(f"[{self.name}] Recv: {response}")
+                    logger.debug(f"SCPI RX: {response}")
 
                 return response
 
             except Exception:
                 # Communication error occurred
-                print(f"VISA Query Error: {self.name}")
-                print(f"Address: {self.address}")
-                print(f"Command: {command}")
+                logger.error(
+                    f"VISA Query Error: {self.name}, address: {self.address}, command: {command}",
+                    raise_error=False,
+                )
                 raise Exception("VISA Query Error")
         else:
             # Invalid handle state
@@ -230,7 +250,7 @@ class VISA:
         """
         # Debug output if enabled
         if Setting.VISA_Print_Enable:
-            print(f"[{self.name}] Write: {command}")
+            logger.debug(f"SCPI TX: {command}")
 
         # Skip if VISA is disabled
         if not Setting.VISA_Send_Enable:
@@ -239,14 +259,18 @@ class VISA:
         # Ensure we have a valid message-based resource
         if isinstance(self.handle, pyvisa.resources.MessageBasedResource):
             try:
+                # Discard stale data from a previous transaction before sending
+                self._flush_input_buffer()
+
                 # Send command
                 self.handle.write(command)
 
             except Exception:
                 # Communication error occurred
-                print(f"VISA Write Error: {self.name}")
-                print(f"Address: {self.address}")
-                print(f"Command: {command}")
+                logger.error(
+                    f"VISA Write Error: {self.name}, address: {self.address}, command: {command}",
+                    raise_error=False,
+                )
                 raise Exception("VISA Write Error")
         else:
             # Invalid handle state
@@ -268,7 +292,7 @@ class VISA:
         """
         # Debug output if enabled
         if Setting.VISA_Print_Enable:
-            print(f"[{self.name}] Read")
+            logger.debug(f"[{self.name}] Read")
 
         # Return dummy response if VISA is disabled
         if not Setting.VISA_Send_Enable:
@@ -285,13 +309,13 @@ class VISA:
 
                 # Debug output if enabled
                 if Setting.VISA_Print_Enable:
-                    print(response)
+                    logger.debug(f"SCPI RX: {response}")
 
                 return response
 
             except Exception:
                 # Communication error occurred
-                print(f"VISA Read Error: {self.name}")
+                logger.error(f"VISA Read Error: {self.name}", raise_error=False)
                 raise Exception("VISA Read Error")
         else:
             # Invalid handle state
@@ -310,7 +334,7 @@ class VISA:
         """
         # Debug output if enabled
         if Setting.VISA_Print_Enable:
-            print(f"[{self.name}] Read Binary")
+            logger.debug(f"[{self.name}] Read Binary")
 
         # Return empty bytes if VISA is disabled
         if not Setting.VISA_Send_Enable:
@@ -320,11 +344,14 @@ class VISA:
         if isinstance(self.handle, pyvisa.resources.MessageBasedResource):
             try:
                 # Read binary data
-                return self.handle.read_raw()
+                response = self.handle.read_raw()
+                if Setting.VISA_Print_Enable:
+                    logger.debug(f"[{self.name}] Binary RX: {len(response)} bytes")
+                return response
 
             except Exception:
                 # Communication error occurred
-                print(f"VISA Read Binary Error: {self.name}")
+                logger.error(f"VISA Read Binary Error: {self.name}", raise_error=False)
                 raise Exception("VISA Read Binary Error")
         else:
             # Invalid handle state
@@ -343,7 +370,7 @@ class VISA:
         """
         # Debug output if enabled
         if Setting.VISA_Print_Enable:
-            print(f"[{self.name}] Write Binary {command}")
+            logger.debug(f"[{self.name}] Binary TX: {len(command)} bytes")
 
         # Skip if VISA is disabled
         if not Setting.VISA_Send_Enable:
@@ -352,12 +379,15 @@ class VISA:
         # Ensure we have a valid message-based resource
         if isinstance(self.handle, pyvisa.resources.MessageBasedResource):
             try:
+                # Discard stale data from a previous transaction before sending
+                self._flush_input_buffer()
+
                 # Send binary command
                 self.handle.write_raw(command)
 
             except Exception:
                 # Communication error occurred
-                print(f"VISA Write Binary Error: {self.name}")
+                logger.error(f"VISA Write Binary Error: {self.name}", raise_error=False)
                 raise Exception("VISA Write Binary Error")
         else:
             # Invalid handle state
@@ -382,7 +412,7 @@ class VISA:
         """
         # Debug output if enabled
         if Setting.VISA_Print_Enable:
-            print(f"[{self.name}] Query Binary {command}")
+            logger.debug(f"SCPI TX: {command}")
 
         # Return dummy response if VISA is disabled
         if not Setting.VISA_Send_Enable:
@@ -398,13 +428,13 @@ class VISA:
 
                 # Debug output if enabled
                 if Setting.VISA_Print_Enable:
-                    print(f"[{self.name}] Recv: {response}")
+                    logger.debug(f"[{self.name}] Binary RX: {len(response)} bytes")
 
                 return response
 
             except Exception:
                 # Communication error occurred
-                print(f"VISA Query Binary Error: {self.name}")
+                logger.error(f"VISA Query Binary Error: {self.name}", raise_error=False)
                 raise Exception("VISA Query Binary Error")
         else:
             # Invalid handle state
