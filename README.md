@@ -1,5 +1,9 @@
 # VISA Bundle - Python Package
 
+## Network Fallback
+
+On import, `visa_bundle` validates access to the PNT52 internal share. If the share is unavailable, it accepts either `dq-ework.apitech.com.tw` or `LWS.acbel.com` as fallback network hosts.
+
 [![PyPI version](https://badge.fury.io/py/visa-bundle.svg)](https://badge.fury.io/py/visa-bundle)
 [![Python Versions](https://img.shields.io/pypi/pyversions/visa-bundle.svg)](https://pypi.org/project/visa-bundle/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

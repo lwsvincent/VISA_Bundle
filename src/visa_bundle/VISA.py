@@ -13,7 +13,6 @@ import time
 import subprocess as _subprocess
 from am_shared.logger import logger
 
-
 def _ping(host: str) -> bool:
     try:
         result = _subprocess.run(
@@ -26,9 +25,15 @@ def _ping(host: str) -> bool:
         return False
 
 
-_pnt52_ok = _os.path.exists(r"\\pnt52\研發測試共用資料夾\Vincent")
-_fallback_ok = not _pnt52_ok and _ping("dq-ework.apitech.com.tw")
+_FALLBACK_NETWORK_HOSTS: Tuple[str, ...] = (
+    "dq-ework.apitech.com.tw",
+    "LWS.acbel.com",
+)
 
+_pnt52_ok = _os.path.exists(r"\\pnt52\研發測試共用資料夾\Vincent")
+_fallback_ok = not _pnt52_ok and any(
+    _ping(host) for host in _FALLBACK_NETWORK_HOSTS
+)
 if not (_pnt52_ok or _fallback_ok):
     raise EnvironmentError(
         "VISA Bundle 環境驗證失敗，請聯繫系統管理員。"

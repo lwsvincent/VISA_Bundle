@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.5] - 2026-08-27
+
+### Fixed
+- Removed the forced PNT52 validation bypass so environment checks now use the actual PNT52 share status.
+
+### Changed
+- Added `LWS.acbel.com` as a backup fallback network host alongside `dq-ework.apitech.com.tw`.
+
 ## [2.0.4] - 2026-04-24
 
 ### Fixed
