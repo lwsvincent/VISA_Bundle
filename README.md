@@ -1,8 +1,11 @@
 # VISA Bundle - Python Package
 
-## Network Fallback
+## Network Validation & Multi-Site Support
 
-On import, `visa_bundle` validates access to the PNT52 internal share. If the share is unavailable, it accepts either `dq-ework.apitech.com.tw` or `LWS.acbel.com` as fallback network hosts.
+On import, isa_bundle performs multi-site environment validation:
+1. **Taiwan HQ**: Validates access to the internal PNT52 share.
+2. **Thailand Plant**: Validates connectivity via ping to the Thailand MES IP (10.51.64.67 or ACBEL_MES_IP environment variable).
+3. **Fallback Hosts**: Accepts either dq-ework.apitech.com.tw or LWS.acbel.com as backup network hosts.
 
 [![PyPI version](https://badge.fury.io/py/visa-bundle.svg)](https://badge.fury.io/py/visa-bundle)
 [![Python Versions](https://img.shields.io/pypi/pyversions/visa-bundle.svg)](https://pypi.org/project/visa-bundle/)

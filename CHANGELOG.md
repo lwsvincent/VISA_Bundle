@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.6] - 2026-11-05
+
+### Added
+- 通用多廠區環境驗證支援：新增泰國廠 MES IP (`10.51.64.67`) ping 檢測，並支援 `ACBEL_MES_IP` 環境變數動態覆寫。
+
+### Changed
+- 升級為通用多廠區驗證架構（Universal Multi-Site Validation）：依序以短路求值檢查台灣 PNT52 網芳、泰國 MES 系統與備用網路主機，任一站點符合即授權啟用。
+
 ## [2.0.5] - 2026-08-27
 
 ### Fixed

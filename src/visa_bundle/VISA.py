@@ -25,16 +25,25 @@ def _ping(host: str) -> bool:
         return False
 
 
+_THAILAND_MES_IP = _os.getenv("ACBEL_MES_IP", "10.51.64.67")
+
 _FALLBACK_NETWORK_HOSTS: Tuple[str, ...] = (
     "dq-ework.apitech.com.tw",
     "LWS.acbel.com",
 )
 
+# 1. 台灣總部 PNT52 網芳驗證
 _pnt52_ok = _os.path.exists(r"\\pnt52\研發測試共用資料夾\Vincent")
-_fallback_ok = not _pnt52_ok and any(
+
+# 2. 泰國廠 MES IP 驗證 (短路求值避免不必要的網路 ping)
+_thailand_mes_ok = not _pnt52_ok and _ping(_THAILAND_MES_IP)
+
+# 3. 備用網路主機驗證
+_fallback_ok = not (_pnt52_ok or _thailand_mes_ok) and any(
     _ping(host) for host in _FALLBACK_NETWORK_HOSTS
 )
-if not (_pnt52_ok or _fallback_ok):
+
+if not (_pnt52_ok or _thailand_mes_ok or _fallback_ok):
     raise EnvironmentError(
         "VISA Bundle 環境驗證失敗，請聯繫系統管理員。"
     )
